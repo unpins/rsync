@@ -48,5 +48,6 @@ The [Releases](https://github.com/unpins/rsync/releases) page has standalone bin
 
 ## Build notes
 
-- Linux and macOS link `zlib`, `zstd`, `lz4`, `xxhash`, `popt` and `openssl` statically; the result is a single self-contained executable.
-- **Windows** uses [Cosmopolitan](https://justine.lol/cosmopolitan/) (cosmocc), not mingw. rsync runs its sender, receiver and generator as separate processes (`fork`) and spawns the remote shell with `fork` + `exec`; msvcrt has neither, which is why native-Windows rsync has historically meant a Cygwin build. Cosmopolitan implements those primitives on Windows, so the same upstream source builds into one `.exe` that imports only system DLLs. Two cross-compile quirks: rsync's "secure mkstemp" probe is a run-test that defaults off when cross-compiling (forced back on, since cosmo's `mkstemp` works — otherwise the receiver's temp-file fallback collides on Windows), and `libzstd`'s cosmo build is handled in `nix-lib/cosmo/zstd.nix`.
+- **Windows** uses [Cosmopolitan](https://justine.lol/cosmopolitan/) (cosmocc), not mingw. rsync runs its sender, receiver and generator as separate `fork`ed processes and `exec`s the remote shell — primitives msvcrt lacks, which is why native-Windows rsync has historically meant a Cygwin build. Cosmopolitan provides them, so the stock upstream source builds into one `.exe` that imports only system DLLs.
+- Two cross-compile fixes make the Windows build work: rsync's "secure mkstemp" probe is skipped when cross-compiling, so it's forced back on (cosmo's `mkstemp` is fine; the fallback path it would otherwise take corrupts transfers), and `libzstd`'s cosmo build is handled in `nix-lib/cosmo/zstd.nix`.
+- No platforms are excluded, and no rsync features are turned off to get a static build.
