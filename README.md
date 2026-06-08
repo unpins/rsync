@@ -1,13 +1,13 @@
 # rsync
 
-Standalone build of [rsync](https://rsync.samba.org/).
+[rsync](https://rsync.samba.org/) as a single self-contained binary, built natively for Linux, macOS, and Windows.
 
 [![CI](https://github.com/unpins/rsync/actions/workflows/rsync.yml/badge.svg)](https://github.com/unpins/rsync/actions)
 ![Linux](https://img.shields.io/badge/Linux-✓-success?logo=linux&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-✓-success?logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-✓-success?logo=windows&logoColor=white)
 
-Part of the [unpins](https://unpins.org) project — native single-binary builds with no third-party runtime dependencies.
+Part of the [unpins](https://unpins.org) catalog; install it with [`unpin`](https://github.com/unpins/unpin): `unpin install rsync`.
 
 ## Usage
 
@@ -22,6 +22,10 @@ To install it onto your PATH:
 ```bash
 unpin install rsync
 ```
+
+## Man pages
+
+`rsync.1`, `rsync-ssl.1` and `rsyncd.conf.5` are embedded in the binary — read them with `unpin man rsync`, `unpin man rsync-ssl` and `unpin man rsyncd.conf`.
 
 ## Build locally
 
@@ -41,10 +45,6 @@ The first invocation will offer to add the [unpins.cachix.org](https://unpins.ca
 ## Manual download
 
 The [Releases](https://github.com/unpins/rsync/releases) page has standalone binaries for manual download.
-
-## Man pages
-
-`rsync.1`, `rsync-ssl.1` and `rsyncd.conf.5` are embedded in the binary — read them with `unpin man rsync`, `unpin man rsync-ssl` and `unpin man rsyncd.conf`.
 
 ## Build notes
 
