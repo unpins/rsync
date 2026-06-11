@@ -21,6 +21,7 @@
   outputs = { self, unpins-lib }:
     unpins-lib.lib.mkStandaloneFlake {
       inherit self;
+      dnsFallback = true; # resolves hostnames; opt into the Android DNS fallback
       name = "rsync";
       build = pkgs: pkgs.pkgsStatic.rsync.overrideAttrs (_: { doCheck = false; });
       windowsBuild = import ./cosmo.nix { inherit unpins-lib; };
