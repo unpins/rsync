@@ -1,5 +1,5 @@
 {
-  description = "Standalone build of rsync";
+  description = "rsync as a single self-contained binary";
 
   nixConfig = {
     extra-substituters = [ "https://unpins.cachix.org" ];
