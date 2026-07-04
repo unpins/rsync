@@ -23,6 +23,12 @@
       inherit self;
       dnsFallback = true; # resolves hostnames; opt into the Android DNS fallback
       name = "rsync";
+
+      # Build via the unpin-llvm engine + emit a bitcode multicall module.
+      engine = "unpin-llvm";
+      multicall = {
+        programs = [{ name = "rsync"; }];
+      };
       build = pkgs: pkgs.pkgsStatic.rsync.overrideAttrs (_: { doCheck = false; });
       windowsBuild = import ./cosmo.nix { inherit unpins-lib; };
     };
