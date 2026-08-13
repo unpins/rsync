@@ -23,6 +23,8 @@
       inherit self;
       dnsFallback = true; # resolves hostnames; opt into the Android DNS fallback
       name = "rsync";
+      smoke = [ "--version" ];
+      smokePattern = "^rsync +version [0-9]+\\.[0-9]+";
 
       # Build via the unpin-llvm engine + emit a bitcode multicall module.
       engine = "unpin-llvm";
