@@ -11,7 +11,19 @@
 { unpins-lib }:
 pkgs:
 let
-  cosmoPkgs = unpins-lib.lib.cosmoStaticCross pkgs;
+  # OPENSSLDIR/ENGINESDIR/MODULESDIR default to openssl's own $out, so the .exe
+  # ended up carrying a live reference to `openssl-…-cosmo-gnu-3.6.2-etc` — a
+  # trust-store directory that exists nowhere on a user's machine. The engine's
+  # native scope already retargets openssl to /etc/ssl set-wide
+  # (native-overlay/openssl.nix) and the standalone `openssl` package retargets
+  # the mingw build to C:/ssl; the COSMO scope has no such retarget, so every
+  # cosmo consumer of openssl inherits the store path. /etc/ssl matches the
+  # native side (rsync links openssl only for its MD4/MD5 digests -- it never
+  # reads the trust store -- so the directory's contents are moot; what matters
+  # is that the artifact stops carrying a store path).
+  cosmoPkgs = (unpins-lib.lib.cosmoStaticCross pkgs).extend (final: prev: {
+    openssl = prev.openssl.overrideAttrs (unpins-lib.lib.retargetOpenssl "/etc/ssl");
+  });
 in
 cosmoPkgs.rsync.overrideAttrs (oa: {
   # rsync's "secure mkstemp" probe is an AC_RUN test, so it resolves to "cross"
