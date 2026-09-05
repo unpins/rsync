@@ -26,12 +26,33 @@ let
   });
 in
 cosmoPkgs.rsync.overrideAttrs (oa: {
-  # rsync's "secure mkstemp" probe is an AC_RUN test, so it resolves to "cross"
-  # (≠ "yes") when cross-compiling and HAVE_SECURE_MKSTEMP is left undefined.
-  # do_mkstemp() then takes its fallback path — mktemp() + open(O_EXCL|O_CREAT)
-  # — and cosmo's mktemp() collides on Windows ("mkstemp … failed: File exists"),
-  # breaking every transfer (the receiver writes through a temp file). cosmo's
-  # mkstemp() itself works correctly (verified on the VM: unique 0600 temps), so
-  # force the cache var to take the mkstemp() path.
+  # Same cross-defeated AC_RUN probes as the native build (see flake.nix), but
+  # the answers are Windows', so they are set here rather than shared. Measured
+  # with the upstream probe bodies compiled by this very toolchain and run on
+  # the Windows VM:
+  #
+  #   hardlink-symlink  yes   link()/linkat() on a symlink works, and lstat
+  #                           still reports S_ISLNK on the new name.
+  #   socketpair        yes   cosmo implements AF_UNIX socketpair on NT;
+  #                           verified bidirectional, not just created.
+  #   hardlink-special  no    cosmo has no mkfifo() at all -- the probe does
+  #                           not even compile -- so there are no special files
+  #                           to hard-link. Pinned to "no" so the answer is a
+  #                           recorded measurement and not a cross default that
+  #                           happens to agree.
+  rsync_cv_can_hardlink_symlink = "yes";
+  rsync_cv_HAVE_SOCKETPAIR = "yes";
+  rsync_cv_can_hardlink_special = "no";
+
+  # This one overrides the probe rather than answering it. Run on Windows the
+  # probe says NO: cosmo's mkstemp() creates the file 0664, and upstream
+  # demands exactly 0600 (NTFS has no such mode to give). But the "no" branch
+  # is broken here, not merely less secure -- do_mkstemp() then takes
+  # mktemp() + open(O_EXCL|O_CREAT), and cosmo's mktemp() collides on Windows
+  # ("mkstemp ... failed: File exists"), breaking every transfer, since the
+  # receiver writes through a temp file. cosmo's mkstemp() itself is fine
+  # (verified on the VM: unique names, no collisions), and do_mkstemp()
+  # fchmod()s to the mode it wants immediately after, so the one thing the
+  # probe rejects is the one thing rsync fixes for itself.
   rsync_cv_HAVE_SECURE_MKSTEMP = "yes";
 })

@@ -20,6 +20,39 @@
   # do). See ./cosmo.nix for the recipe and the one dependency quirk.
   outputs = { self, unpins-lib }:
     let
+      # Four capabilities rsync settles with AC_RUN_IFELSE, which a cross build
+      # never runs -- so autoconf took the "no" branch on all four and the
+      # binary came out weaker than any distro's. Not cosmetic: with `-H`,
+      # hard-linked symlinks and FIFOs were copied as separate files instead of
+      # preserved, `--link-dest` refused to link them, and `do_mkstemp()` fell
+      # back to `mktemp()` + `open(O_EXCL|O_CREAT)`.
+      #
+      # The answers belong to the target's kernel and libc, so they were
+      # measured by running the upstream probe bodies on the real targets
+      # (windows' differ and live in ./cosmo.nix):
+      #
+      #                        linux-musl   darwin   windows (cosmo)
+      #   hardlink-symlink        yes        yes          yes
+      #   hardlink-special        yes        yes          no
+      #   socketpair              yes        yes          yes
+      #   secure-mkstemp          yes        yes          no  (mode 0664)
+      #
+      # Copy the probe body from configure.ac rather than writing one: it uses
+      # `linkat(…, 0)` when HAVE_LINKAT, which is what `do_link()` calls, and on
+      # darwin the two disagree -- plain `link()` follows the symlink and fails
+      # on a dangling one, so probing with it mis-answers darwin `no`.
+      #
+      # Left alone though cross-defeated the same way: HAVE_C99_VSNPRINTF (the
+      # "no" branch uses rsync's own lib/snprintf.c -- correct, just not libc's)
+      # and MKNOD_CREATES_FIFOS/SOCKETS (its "no" branch uses mkfifo()/socket()
+      # instead of mknod(), the more portable route, not a weaker one).
+      runProbeAnswers = {
+        rsync_cv_can_hardlink_symlink = "yes";
+        rsync_cv_can_hardlink_special = "yes";
+        rsync_cv_HAVE_SOCKETPAIR = "yes";
+        rsync_cv_HAVE_SECURE_MKSTEMP = "yes";
+      };
+
       # `rsync-ssl` is a /bin/sh helper that shells out to `openssl s_client`
       # or stunnel; it is not a program this binary can hold, and it is not
       # shipped. Its man page is, though: the man harvest takes the package's
@@ -46,7 +79,8 @@
       multicall = {
         programs = [{ name = "rsync"; }];
       };
-      build = pkgs: (pkgs.pkgsStatic.rsync.overrideAttrs (_: { doCheck = false; }))
+      build = pkgs: (pkgs.pkgsStatic.rsync.overrideAttrs
+        (_: { doCheck = false; } // runProbeAnswers))
         .overrideAttrs dropRsyncSslMan;
       # The cosmo build's man output happens not to carry the page today (only
       # `rsync.1` and `rsyncd.conf.5` reach the .exe), but the prune goes on
