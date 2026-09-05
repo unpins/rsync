@@ -25,7 +25,7 @@ unpin install rsync
 
 ## Man pages
 
-`rsync.1`, `rsync-ssl.1` and `rsyncd.conf.5` are embedded in the binary — read them with `unpin man rsync`, `unpin man rsync-ssl` and `unpin man rsyncd.conf`.
+`rsync.1` and `rsyncd.conf.5` are embedded in the binary — read them with `unpin man rsync` and `unpin man rsyncd.conf`.
 
 ## Build locally
 
