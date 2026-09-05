@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- The Windows build now compresses with the current zlib. It had been falling
+  back to the 2013 copy bundled in the rsync tarball, because the zlib it was
+  built against handed over no library to link. Every `--compress` transfer
+  went through that older code.
 - Restored four capabilities that cross-compiling had silently switched off.
   rsync settles them by running a test program, which a cross-build cannot do,
   so `configure` answered "no" to all of them: the binary reported
