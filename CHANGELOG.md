@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Updated to rsync 3.5.0.
 - The Windows build now compresses with the current zlib. It had been falling
   back to the 2013 copy bundled in the rsync tarball, because the zlib it was
   built against handed over no library to link. Every `--compress` transfer

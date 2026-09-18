@@ -79,7 +79,16 @@
       multicall = {
         programs = [{ name = "rsync"; }];
       };
-      build = pkgs: (pkgs.pkgsStatic.rsync.overrideAttrs
+      # rsync 3.5.0's recipe writes `${python3}/bin/python3` into the shebangs
+      # of its test scripts. That is text in `preBuild`, never a program the
+      # build runs on the target, yet it names the HOST python: here that is
+      # a whole static CPython (sqlite, gdbm, readline, …) built with the
+      # engine, and on darwin and cosmo one nixpkgs refuses to evaluate, so
+      # the build failed before it started. The tests are off (doCheck below);
+      # the build machine's python is the right one for a shebang anyway.
+      build = pkgs: ((pkgs.pkgsStatic.rsync.override {
+        python3 = pkgs.pkgsStatic.buildPackages.python3;
+      }).overrideAttrs
         (_: { doCheck = false; } // runProbeAnswers))
         .overrideAttrs dropRsyncSslMan;
       # The cosmo build's man output happens not to carry the page today (only

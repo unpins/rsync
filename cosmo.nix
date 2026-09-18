@@ -25,7 +25,8 @@ let
     openssl = prev.openssl.overrideAttrs (unpins-lib.lib.retargetOpenssl "/etc/ssl");
   });
 in
-cosmoPkgs.rsync.overrideAttrs (oa: {
+# python3: see the note on `build` in flake.nix.
+(cosmoPkgs.rsync.override { python3 = cosmoPkgs.buildPackages.python3; }).overrideAttrs (oa: {
   # Same cross-defeated AC_RUN probes as the native build (see flake.nix), but
   # the answers are Windows', so they are set here rather than shared. Measured
   # with the upstream probe bodies compiled by this very toolchain and run on
