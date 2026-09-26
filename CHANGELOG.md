@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.5.0-1] - 2026-09-26
+
 - Updated to rsync 3.5.0.
 - The Windows build now compresses with the current zlib. It had been falling
   back to the 2013 copy bundled in the rsync tarball, because the zlib it was
